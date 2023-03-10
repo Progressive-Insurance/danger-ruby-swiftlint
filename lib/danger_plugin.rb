@@ -303,9 +303,10 @@ module Danger
 
         raw_file_name = r['file'].gsub(dir, '')
         file_name = raw_file_name
-        #if file_path_style == 'root'
-        #  file_name = file_name.sub('.', '')
-        #end
+        if file_path_style == 'root' && file_name.first != '/'
+          file_name = '/' + file_name
+        end
+        
         message = "#{r['reason']}".dup
 
         # extended content here
