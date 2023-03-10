@@ -303,7 +303,7 @@ module Danger
 
         raw_file_name = r['file'].gsub(dir, '')
         file_name = raw_file_name
-        if file_path_style == 'root' && file_name.first != '/'
+        if file_path_style == 'root' && file_name[0] != '/'
           file_name = '/' + file_name
         end
         
