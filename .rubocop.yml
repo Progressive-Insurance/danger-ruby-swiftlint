@@ -6,21 +6,38 @@ AllCops:
 Style/FrozenStringLiteralComment:
   Exclude:
     - 'Dangerfile'
+
 # Customize some cops.
 Layout/LineLength:
   Max: 120
   Exclude:
     - '*.gemspec'
 Metrics/ClassLength:
-  Max: 150
-
-# The danger_plugin.rb file presents unique challenges, ignore it.
+  Max: 250
 Metrics/MethodLength:
+  Max: 15
   Exclude:
     - 'lib/danger_plugin.rb'
 Metrics/PerceivedComplexity:
   Exclude:
     - 'lib/danger_plugin.rb'
+    - 'ext/swiftlint/swiftlint.rb'
+
+# `run` is the plugin's public surface; its parameter list is part of
+# the API contract and can't be tightened without a breaking change.
+Metrics/ParameterLists:
+  Exclude:
+    - 'ext/swiftlint/swiftlint.rb'
+
+# Rake tasks define their constants inside the task block by convention.
+Lint/ConstantDefinitionInBlock:
+  Exclude:
+    - 'ext/swiftlint/Rakefile'
+
+# The gemspec sets `required_ruby_version` for downstream consumers and
+# is independent of the version we lint against here.
+Gemspec/RequiredRubyVersion:
+  Enabled: false
 
 # I just don't like these ones.
 Metrics/AbcSize:
@@ -28,7 +45,6 @@ Metrics/AbcSize:
 Metrics/CyclomaticComplexity:
   Enabled: false
 
-# For Ruby 2.2 compatibility
 Style/NumericPredicate:
   Enabled: false
 

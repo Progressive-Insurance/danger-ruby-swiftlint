@@ -63,7 +63,8 @@ module Danger
     #          if nil, modified and added files from the diff will be used.
     # @return  [void]
     #
-    def lint_files(files = nil, inline_mode: false, fail_on_error: false, additional_swiftlint_args: '', no_comment: false, &select_block)
+    def lint_files(files = nil, inline_mode: false, fail_on_error: false, additional_swiftlint_args: '',
+                   no_comment: false, &select_block)
       # Fails if swiftlint isn't installed
       raise 'swiftlint is not installed' unless swiftlint.installed?
 
@@ -126,9 +127,7 @@ module Danger
       log "Received from Swiftlint: #{issues}"
 
       # filter out any unwanted violations with the passed in select_block
-      if select_block && !no_comment
-        issues = issues.select { |issue| select_block.call(issue) }
-      end
+      issues = issues.select { |issue| select_block.call(issue) } if select_block && !no_comment
 
       # Filter warnings and errors
       @warnings = issues.select { |issue| issue['severity'] == 'Warning' }
@@ -140,7 +139,7 @@ module Danger
       if inline_mode
         # Report with inline comment
         send_inline_comment(warnings, strict ? :fail : :warn)
-        send_inline_comment(errors, (fail_on_error || strict) ? :fail : :warn)
+        send_inline_comment(errors, fail_on_error || strict ? :fail : :warn)
         warn other_issues_message(other_issues_count) if other_issues_count > 0
       elsif warnings.count > 0 || errors.count > 0
         # Report if any warning or error
@@ -154,9 +153,7 @@ module Danger
         should_fail_by_errors = fail_on_error && errors.count > 0
         # Fail danger if any warnings or errors and we are strict
         should_fail_by_strict = strict && (errors.count > 0 || warnings.count > 0)
-        if should_fail_by_errors || should_fail_by_strict
-          fail 'Failed due to SwiftLint errors'
-        end
+        fail 'Failed due to SwiftLint errors' if should_fail_by_errors || should_fail_by_strict
       end
     end
 
@@ -200,7 +197,7 @@ module Danger
     def script_input(files)
       files
         .map.with_index { |file, i| ["SCRIPT_INPUT_FILE_#{i}", file.to_s] }
-        .push(['SCRIPT_INPUT_FILE_COUNT', files.size.to_s])
+            .push(['SCRIPT_INPUT_FILE_COUNT', files.size.to_s])
         .to_h
     end
 
@@ -212,7 +209,9 @@ module Danger
       # Assign files to lint
       if files.nil?
         renamed_files_hash = git.renamed_files.map { |rename| [rename[:before], rename[:after]] }.to_h
-        post_rename_modified_files = git.modified_files.map { |modified_file| renamed_files_hash[modified_file] || modified_file }
+        post_rename_modified_files = git.modified_files.map do |modified_file|
+          renamed_files_hash[modified_file] || modified_file
+        end
         files = (post_rename_modified_files - git.deleted_files) + git.added_files
       else
         files = Dir.glob(files)
@@ -234,6 +233,7 @@ module Danger
         # Accept files included on configuration
         select do |file|
           next true if included_paths.empty?
+
           included_paths_list.include?(file)
         end
     end
@@ -256,6 +256,7 @@ module Danger
       # Replaces them with the environment variable value if it exists.
       file_contents.gsub(/\$\{([^{}]+)\}/) do |env_var|
         return env_var if ENV[Regexp.last_match[1]].nil?
+
         ENV[Regexp.last_match[1]]
       end
     end
@@ -299,14 +300,14 @@ module Danger
       dir = "#{Dir.pwd}/"
       results.each do |r|
         github_filename = r['file'].gsub(dir, '')
-        message = "#{r['reason']}".dup
+        message = r['reason'].to_s.dup
 
         # extended content here
         filename = r['file'].split('/').last
         message << "\n"
         message << "`#{r['rule_id']}`" # helps writing exceptions // swiftlint:disable:this rule_id
         message << " `#{filename}:#{r['line']}`" # file:line for pasting into Xcode Quick Open
-        
+
         send(method, message, file: github_filename, line: r['line'])
       end
     end
@@ -331,52 +332,52 @@ module Danger
     #
     # @return [Array] swiftlint issues
     def filter_git_diff_issues(issues)
-      modified_files_info = git_modified_files_info()
-      return issues.select { |i|
-           modified_files_info["#{i['file']}"] != nil && modified_files_info["#{i['file']}"].include?(i['line'].to_i) 
-        }
+      modified_files_info = git_modified_files_info
+      issues.select do |i|
+        !modified_files_info[i['file'].to_s].nil? && modified_files_info[i['file'].to_s].include?(i['line'].to_i)
+      end
     end
 
     # Finds modified files and added files, creates array of files with modified line numbers
     #
     # @return [Array] Git diff changes for each file
-    def git_modified_files_info()
-        modified_files_info = Hash.new
-        updated_files = (git.modified_files - git.deleted_files) + git.added_files
-        updated_files.each {|file|
-            modified_lines = git_modified_lines(file)
-            modified_files_info[File.expand_path(file)] = modified_lines
-        }
-        git.renamed_files.each { |pair|
-            before_file = pair[:before]
-            after_file = pair[:after]
-            modified_lines = git_modified_lines(before_file)
-            modified_files_info[File.expand_path(after_file)] = modified_lines
-        }
+    def git_modified_files_info
+      modified_files_info = {}
+      updated_files = (git.modified_files - git.deleted_files) + git.added_files
+      updated_files.each do |file|
+        modified_lines = git_modified_lines(file)
+        modified_files_info[File.expand_path(file)] = modified_lines
+      end
+      git.renamed_files.each do |pair|
+        before_file = pair[:before]
+        after_file = pair[:after]
+        modified_lines = git_modified_lines(before_file)
+        modified_files_info[File.expand_path(after_file)] = modified_lines
+      end
 
-        modified_files_info
+      modified_files_info
     end
 
     # Gets git patch info and finds modified line numbers, excludes removed lines
     #
     # @return [Array] Modified line numbers i
     def git_modified_lines(file)
-      git_range_info_line_regex = /^@@ .+\+(?<line_number>\d+),/ 
+      git_range_info_line_regex = /^@@ .+\+(?<line_number>\d+),/
       git_modified_line_regex = /^\+(?!\+|\+)/
-      git_removed_line_regex = /^\-(?!\-|\-)/
+      git_removed_line_regex = /^-(?!-|-)/
       file_info = git.diff_for_file(file)
       line_number = 0
       lines = []
       file_info.patch.split("\n").each do |line|
-          starting_line_number = 0
-          case line
-          when git_range_info_line_regex
-              starting_line_number = Regexp.last_match[:line_number].to_i
-          when git_modified_line_regex
-              lines << line_number
-          end
-          line_number += 1 if line_number > 0 && !git_removed_line_regex.match?(line)
-          line_number = starting_line_number if starting_line_number > 0
+        starting_line_number = 0
+        case line
+        when git_range_info_line_regex
+          starting_line_number = Regexp.last_match[:line_number].to_i
+        when git_modified_line_regex
+          lines << line_number
+        end
+        line_number += 1 if line_number > 0 && !git_removed_line_regex.match?(line)
+        line_number = starting_line_number if starting_line_number > 0
       end
       lines
     end

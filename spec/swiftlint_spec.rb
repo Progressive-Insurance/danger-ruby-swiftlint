@@ -1,15 +1,15 @@
 # frozen_string_literal: true
 
-require File.expand_path('../spec_helper', __FILE__)
+require File.expand_path('spec_helper', __dir__)
 require_relative '../ext/swiftlint/swiftlint'
 
 describe Swiftlint do
   let(:swiftlint) { Swiftlint.new }
   it 'installed? works based on bin/swiftlint file' do
-    expect(File).to receive(:exist?).with(%r{/bin\/swiftlint}).and_return(true)
+    expect(File).to receive(:exist?).with(%r{/bin/swiftlint}).and_return(true)
     expect(swiftlint.installed?).to be_truthy
 
-    expect(File).to receive(:exist?).with(%r{bin\/swiftlint}).and_return(false)
+    expect(File).to receive(:exist?).with(%r{bin/swiftlint}).and_return(false)
     expect(swiftlint.installed?).to be_falsy
   end
 
@@ -60,7 +60,8 @@ describe Swiftlint do
     expect(swiftlint).to receive(:`).with(including(cmd))
     expect(swiftlint).to receive(:update_env).with(
       { 'SCRIPT_INPUT_FILE_COUNT' => '1',
-        'SCRIPT_INPUT_FILE_0' => 'File.swift' })
+        'SCRIPT_INPUT_FILE_0' => 'File.swift' }
+    )
     expect(swiftlint).to receive(:restore_env)
 
     swiftlint.run('lint',

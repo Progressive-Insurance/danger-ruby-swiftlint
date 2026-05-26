@@ -9,9 +9,9 @@ gem 'danger-rubocop'
 
 group :development do
   gem 'bacon'
+  gem 'bundler'
   gem 'mocha'
   gem 'mocha-on-bacon'
   gem 'prettybacon'
   gem 'rubocop', '~> 1.50', require: false
-  gem 'bundler'
 end
