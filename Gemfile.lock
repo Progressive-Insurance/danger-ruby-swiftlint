@@ -1,7 +1,7 @@
 PATH
   remote: .
   specs:
-    danger-swiftlint (0.37.4)
+    danger-swiftlint (0.37.5)
       danger
       rake (> 10)
       thor (~> 1.4)
