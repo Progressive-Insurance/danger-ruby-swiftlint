@@ -12,6 +12,6 @@ group :development do
   gem 'mocha'
   gem 'mocha-on-bacon'
   gem 'prettybacon'
-  gem 'rubocop', '~> 0.50.0', require: false
+  gem 'rubocop', '~> 1.50', require: false
   gem 'bundler'
 end

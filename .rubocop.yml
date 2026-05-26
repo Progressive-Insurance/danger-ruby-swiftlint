@@ -1,18 +1,13 @@
-# FIXME: rubocop is pinned at ~> 0.50.0 (released 2017) and its `TargetRubyVersion`
-# table maxes out at Ruby 2.4. Modern Ruby (3.x) also breaks the gem's parser/Psych
-# dependencies. To keep the linter running in CI we force the target down to 2.4
-# and pin the rubocop job to Ruby 2.7 (the newest version where 0.50.0 still
-# loads). This is a temporary band-aid: bump rubocop to a modern release ASAP
-# and remove this block (and the Ruby pin in .github/workflows/ci.yml).
 AllCops:
-  TargetRubyVersion: 2.4
+  TargetRubyVersion: 3.0
+  NewCops: disable
 
 # Disable linting of Dangerfile.
 Style/FrozenStringLiteralComment:
   Exclude:
     - 'Dangerfile'
 # Customize some cops.
-Metrics/LineLength:
+Layout/LineLength:
   Max: 120
   Exclude:
     - '*.gemspec'
