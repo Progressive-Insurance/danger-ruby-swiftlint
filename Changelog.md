@@ -2,7 +2,7 @@
 
 ## Current Master
 
-- Nothing yet!
+- Dropped support for Ruby 3.0, 3.1, and 3.2. See #216
 
 ## 0.37.5
 
@@ -35,7 +35,7 @@
 
 ## 0.35.0
 
-- Updates Thor to 1.0.0. 
+- Updates Thor to 1.0.0.
 
 ## 0.34.0
 
