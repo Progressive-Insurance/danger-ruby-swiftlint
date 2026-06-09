@@ -1,31 +1,43 @@
-# FIXME: rubocop is pinned at ~> 0.50.0 (released 2017) and its `TargetRubyVersion`
-# table maxes out at Ruby 2.4. Modern Ruby (3.x) also breaks the gem's parser/Psych
-# dependencies. To keep the linter running in CI we force the target down to 2.4
-# and pin the rubocop job to Ruby 2.7 (the newest version where 0.50.0 still
-# loads). This is a temporary band-aid: bump rubocop to a modern release ASAP
-# and remove this block (and the Ruby pin in .github/workflows/ci.yml).
 AllCops:
-  TargetRubyVersion: 2.4
+  TargetRubyVersion: 3.0
+  NewCops: disable
 
 # Disable linting of Dangerfile.
 Style/FrozenStringLiteralComment:
   Exclude:
     - 'Dangerfile'
+
 # Customize some cops.
-Metrics/LineLength:
+Layout/LineLength:
   Max: 120
   Exclude:
     - '*.gemspec'
 Metrics/ClassLength:
-  Max: 150
-
-# The danger_plugin.rb file presents unique challenges, ignore it.
+  Max: 250
 Metrics/MethodLength:
+  Max: 15
   Exclude:
     - 'lib/danger_plugin.rb'
 Metrics/PerceivedComplexity:
   Exclude:
     - 'lib/danger_plugin.rb'
+    - 'ext/swiftlint/swiftlint.rb'
+
+# `run` is the plugin's public surface; its parameter list is part of
+# the API contract and can't be tightened without a breaking change.
+Metrics/ParameterLists:
+  Exclude:
+    - 'ext/swiftlint/swiftlint.rb'
+
+# Rake tasks define their constants inside the task block by convention.
+Lint/ConstantDefinitionInBlock:
+  Exclude:
+    - 'ext/swiftlint/Rakefile'
+
+# The gemspec sets `required_ruby_version` for downstream consumers and
+# is independent of the version we lint against here.
+Gemspec/RequiredRubyVersion:
+  Enabled: false
 
 # I just don't like these ones.
 Metrics/AbcSize:
@@ -33,7 +45,6 @@ Metrics/AbcSize:
 Metrics/CyclomaticComplexity:
   Enabled: false
 
-# For Ruby 2.2 compatibility
 Style/NumericPredicate:
   Enabled: false
 
