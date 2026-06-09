@@ -2,7 +2,7 @@
 
 ## Current Master
 
-- Dropped support for Ruby 3.0, 3.1, and 3.2. See #216
+- Dropped support for Ruby 3.0, 3.1, and 3.2. See [#216](https://github.com/ashfurrow/danger-ruby-swiftlint/pull/216)
 
 ## 0.37.5
 
